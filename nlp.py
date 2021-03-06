@@ -1,7 +1,6 @@
 """
 
 """
-
 # External imports
 import pdb
 import json
@@ -69,13 +68,13 @@ def evaluate_bias(ds: List[str], predicted: List[GENDER]) -> Dict:
     prof_dict = dict(prof_dict)
     all_total = sum(total.values())
     
-    acc = round((sum(correct_cnt.values()) / all_total) * 100, 1)  #calcul accuracy
+    acc = round((sum(correct_cnt.values()) / all_total) * 100, 1)  #compute accuracy
     
-    recall_male = round((correct_cnt[GENDER.male] / total[GENDER.male]) * 100, 1)  #calcul metrics for male
+    recall_male = round((correct_cnt[GENDER.male] / total[GENDER.male]) * 100, 1)  #compute metrics for male
     prec_male = round((correct_cnt[GENDER.male] / pred_cnt[GENDER.male]) * 100, 1)
     f1_male = round(calc_f1(prec_male, recall_male), 1)
     
-    recall_female = round((correct_cnt[GENDER.female] / total[GENDER.female]) * 100, 1)  #calcul metrics for female
+    recall_female = round((correct_cnt[GENDER.female] / total[GENDER.female]) * 100, 1)  #compute metrics for female
     prec_female = round((correct_cnt[GENDER.female] / pred_cnt[GENDER.female]) * 100, 1)
     f1_female = round(calc_f1(prec_female, recall_female), 1)
 

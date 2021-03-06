@@ -6,7 +6,13 @@ FROM python:3.8-slim
 #######################
 WORKDIR /docker
 
+
+# https://docs.docker.com/language/python/build-images/
+# https://docs.docker.com/engine/reference/commandline/save/
+
 COPY . /docker
+
+RUN bash install.sh
 #Define input/output directories
 VOLUME /input
 VOLUME /output
