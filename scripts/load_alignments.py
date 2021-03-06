@@ -9,7 +9,6 @@ from pprint import pformat
 from docopt import docopt
 from collections import defaultdict, Counter
 from operator import itemgetter
-from tqdm import tqdm
 from typing import List
 import csv
 
@@ -25,7 +24,7 @@ from evaluate import evaluate_bias
 from languages.czech import CzechPredictor
 #=-----
 
-LANGAUGE_PREDICTOR = {
+LANGUAGE_PREDICTOR = {
     "es": lambda: SpacyPredictor("es"),
     "fr": lambda: SpacyPredictor("fr"),
     "it": lambda: SpacyPredictor("it"),
@@ -70,7 +69,7 @@ def get_translated_professions(alignment_fn: str, ds: List[List[str]], bitext: L
     mismatched = [ind for (ind, (ds_src_sent, bitext_src_sent)) in enumerate(zip(ds_src_sents, bitext_src_sents))
                   if ds_src_sent != bitext_src_sent]
     if len(mismatched) != 0:
-        raise AssertionError
+        raise AssertionError  # end
 
     bitext = [(ind, (src_sent.split(), tgt_sent.split()))
               for ind, (src_sent, tgt_sent) in bitext]
@@ -99,7 +98,7 @@ def get_translated_professions(alignment_fn: str, ds: List[List[str]], bitext: L
     translated_professions = []
     target_indices = []
 
-    for (_, (src_sent, tgt_sent)), alignment, cur_indices in tqdm(zip(bitext, alignments, src_indices)):
+    for (_, (src_sent, tgt_sent)), alignment, cur_indices in zip(bitext, alignments, src_indices):
         # cur_translated_profession = " ".join([tgt_sent[cur_tgt_ind]
         #                                       for src_ind in cur_indices
         #                                       for cur_tgt_ind in alignment[src_ind]])
@@ -115,6 +114,7 @@ def get_translated_professions(alignment_fn: str, ds: List[List[str]], bitext: L
     return translated_professions, target_indices
 
 
+# pas pour le moment
 def output_predictions(target_sentences, gender_predictions, out_fn):  # delete
     """
     Write gender predictions to output file, for comparison
@@ -126,6 +126,7 @@ def output_predictions(target_sentences, gender_predictions, out_fn):  # delete
         writer.writerow(["Sentence", "Predicted gender"])
         for sent, gender in zip(target_sentences, gender_predictions):
             writer.writerow([sent, str(gender).split(".")[1]])
+
 
 def align_bitext_to_ds(bitext, ds):
     """
@@ -140,21 +141,9 @@ def align_bitext_to_ds(bitext, ds):
     return new_bitext
 
 if __name__ == "__main__":
-    # Parse command line arguments
-    args = docopt(__doc__)
-    ds_fn = args["--ds"]
-    bi_fn = args["--bi"]
-    align_fn = args["--align"]
-    out_fn = args["--out"]
-    lang = args["--lang"]
-
-    debug = args["--debug"]
-    if debug:
-        logging.basicConfig(level = logging.DEBUG)
-    else:
-        logging.basicConfig(level = logging.INFO)
-
-    gender_predictor = LANGAUGE_PREDICTOR[lang]()
+    
+# à revoir
+    gender_predictor = LANGUAGE_PREDICTOR[lang]()
 
     ds = [line.strip().split("\t") for line in open(ds_fn, encoding = "utf8")]
     full_bitext = [line.strip().split(" ||| ")
@@ -168,15 +157,13 @@ if __name__ == "__main__":
 
     gender_predictions = [gender_predictor.get_gender(prof, translated_sent, entity_index, ds_entry)
                           for prof, translated_sent, entity_index, ds_entry
-                          in tqdm(zip(translated_profs,
+                          in zip(translated_profs,
                                       target_sentences,
                                       map(lambda ls:min(ls, default = -1), tgt_inds),
-                                      ds))]
+                                      ds)]
 
     # Output predictions
     output_predictions(target_sentences, gender_predictions, out_fn)
 
     d = evaluate_bias(ds, gender_predictions)
 
-
-    logging.info("DONE")

@@ -2,3 +2,6 @@
 venv/
 test-docker/
 .dockerignore
+scripts/__pycache__
+nlp.py
+test-systran-align
