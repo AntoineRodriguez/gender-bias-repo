@@ -2,11 +2,11 @@
     <file-name> --in=IN_FILE --out=OUT_FILE [--debug]
 """
 # External imports
-import logging
+#import logging
 import spacy
 import pdb
-from pprint import pprint
-from pprint import pformat
+#from pprint import pprint
+#from pprint import pformat
 from docopt import docopt
 from collections import defaultdict
 from operator import itemgetter

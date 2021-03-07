@@ -1,8 +1,7 @@
 """ 
-explication du code
+In this code, we aim to identify the gender according to the determiners
 """
 # External imports
-import logging
 import pdb
 from pprint import pprint
 from pprint import pformat
@@ -16,7 +15,7 @@ import spacy
 # Local imports
 from languages.util import GENDER, get_gender_from_token
 #=-----
-
+# german gender determiners
 DE_DETERMINERS = {"der": GENDER.male, "ein": GENDER.male, "dem": GENDER.male, #"den": GENDER.male, 
                   "einen": GENDER.male, "des": GENDER.male, "er": GENDER.male, "seiner": GENDER.male,
                   "ihn": GENDER.male, "seinen": GENDER.male, "ihm": GENDER.male, "ihren": GENDER.male,

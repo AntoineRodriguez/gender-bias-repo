@@ -1,22 +1,22 @@
-""" Usage:
-    <file-name> --in=IN_FILE --out=OUT_FILE [--debug]
-"""
+
 # External imports
-import logging
 import pdb
-from pprint import pprint
-from pprint import pformat
-from docopt import docopt
-from collections import defaultdict
-from operator import itemgetter
-from tqdm import tqdm
-from collections import Counter
+#from pprint import pprint
+#from pprint import pformat
+#from docopt import docopt
+#from collections import defaultdict
+#from operator import itemgetter
+#from tqdm import tqdm
+#from collections import Counter
 from spacy.lang.he import Hebrew
 
 # Local imports
-from languages.util import GENDER
+from util import GENDER
 #=-----
 
+""" 
+In this code, we aim to identify the gender according to the hebrew determiners
+"""
 class HebrewPredictor:
     """
     Hebrew morphology heurstics.
@@ -34,7 +34,7 @@ class HebrewPredictor:
         Predict gender of an input profession.
         """
         if profession not in self.cache:
-            self.cache[profession] = self._get_gender(profession)
+            self.cache[profession] = self._get_gender(profession) # predict gender 
 
         return self.cache[profession]
 
@@ -47,18 +47,20 @@ class HebrewPredictor:
             # Empty string is an error in alignment
             return GENDER.unknown
 
-        toks = [w.text for w in self.tokenizer(profession)
+        toks = [w.text for w in self.tokenizer(profession) # get all profession's tokens which are diffrent of "את"
                 if w.text != "את"]
 
-        if any([tok[-1] in ["ת", "ה"] for tok in toks]):
+        if any([tok[-1] in ["ת", "ה"] for tok in toks]): # check female determiners 
             return GENDER.female
 
         return GENDER.male
 
-
+""" 
+In this code, we aim to identify the gender according to the arabic determiners
+"""
 class ArabicPredictor:
     """
-    Hebrew morphology heurstics.
+    Arabic morphology heurstics.
     """
     def __init__(self):
         """
@@ -73,7 +75,7 @@ class ArabicPredictor:
         Predict gender of an input profession.
         """
         if profession not in self.cache:
-            self.cache[profession] = self._get_gender(profession)
+            self.cache[profession] = self._get_gender(profession) # predict gender 
 
         return self.cache[profession]
 
@@ -88,21 +90,22 @@ class ArabicPredictor:
 
         toks = self.tokenizer(profession)
 
-        if any([("ة" in tok) or ("ﺔ" in tok) for tok in toks]):
+        if any([("ة" in tok) or ("ﺔ" in tok) for tok in toks]): # check the female determiners from profession's tokens
             return GENDER.female
 
         return GENDER.male
 
 
 if __name__ == "__main__":
-    # Parse command line arguments
-    args = docopt(__doc__)
-    inp_fn = args["--in"]
-    out_fn = args["--out"]
-    debug = args["--debug"]
-    if debug:
-        logging.basicConfig(level = logging.DEBUG)
-    else:
-        logging.basicConfig(level = logging.INFO)
-
-    logging.info("DONE")
+    ds = ['female', 1, 'The developer argued with the designer because she did not like the design.', 'developer']
+    tr_sent = 'جادل المطور مع المصمم لأنها لم تحب التصميم'
+    p = ArabicPredictor()
+    pred = p.get_gender('المطور')
+    print(pred)
+    print("DONE")
+    ds = ['female', 1, 'The developer argued with the designer because she did not like the design.', 'developer']
+    tr_sent = 'היזם התווכח עם המעצב כי היא לא אוהבת את העיצוב'
+    p = HebrewPredictor()
+    pred_he = p.get_gender('העיצוב')
+    print(pred_he)
+    print("DONE")

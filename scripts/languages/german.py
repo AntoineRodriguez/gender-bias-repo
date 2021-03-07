@@ -1,22 +1,22 @@
-""" Usage:
-    <file-name> --in=IN_FILE --out=OUT_FILE [--debug]
+""" 
+In this code, we aim to identify the gender according to the german determiners
 """
 # External imports
-import logging
+
 import pdb
-from pprint import pprint
-from pprint import pformat
-from docopt import docopt
-from collections import defaultdict
-from operator import itemgetter
-from tqdm import tqdm
-from collections import Counter
+#from pprint import pprint
+#from pprint import pformat
+#from docopt import docopt
+#from collections import defaultdict
+#from operator import itemgetter
+#from tqdm import tqdm
+#from collections import Counter
 import spacy
 
 # Local imports
-from languages.util import GENDER, get_gender_from_token
+from util import GENDER, get_gender_from_token
 #=-----
-
+# german determiners
 DE_DETERMINERS = {"der": GENDER.male, "ein": GENDER.male, "dem": GENDER.male, #"den": GENDER.male, 
                   "einen": GENDER.male, "des": GENDER.male, "er": GENDER.male, "seiner": GENDER.male,
                   "ihn": GENDER.male, "seinen": GENDER.male, "ihm": GENDER.male, "ihren": GENDER.male,
@@ -48,25 +48,25 @@ class GermanPredictor:
         """
         Predict gender of an input profession.
         """
-        gold, src_index, src_sent, src_profession = ds_entry
-        src_profession = src_profession.lower()
+        gold, src_index, src_sent, src_profession = ds_entry # get the variables of the line 
+        src_profession = src_profession.lower() # lower letters form
         if src_profession in GERMAN_EXCEPTION:
-            return GERMAN_EXCEPTION[src_profession]
+            return GERMAN_EXCEPTION[src_profession] #gender is female 
     
         if entity_index == -1:
             return GENDER.male
-        words = [word.text for word in self.nlp(translated_sent)]
-        profession_words = [word.text for word in self.nlp(profession)]
-        if any([word.endswith("in") for word in profession_words]):
+        words = [word.text for word in self.nlp(translated_sent)] # get the senstence's words
+        profession_words = [word.text for word in self.nlp(profession)] # get the senstence's professions
+        if any([word.endswith("in") for word in profession_words]): # identify "in" determiner which is for female
 #            pdb.set_trace()
             return GENDER.female
-        dets = self.get_determiners(words)
+        dets = self.get_determiners(words) # get the determiners found in words
         if len(dets) < 2:
-            logging.warn(f"less than two dets found: {translated_sent}")
+           print("less than two dets found:", translated_sent)
         if len(dets) == 0:
             return GENDER.male
-        closest_det = min(dets, key = lambda elem: abs(elem[0] - entity_index))
-        identified_gender = DE_DETERMINERS[closest_det[1]]
+        closest_det = min(dets, key = lambda elem: abs(elem[0] - entity_index)) # get the index of the determiner
+        identified_gender = DE_DETERMINERS[closest_det[1]] # get the determiner and its gender 
         return identified_gender
 
     def get_determiners(self, words):
@@ -77,35 +77,31 @@ class GermanPredictor:
         determiners = [(word_ind, word.lower()) for (word_ind, word) in enumerate(words)
                        if word.lower() in DE_DETERMINERS]
         return determiners
+     # not called anywhere here 
+    # def _get_gender(self, profession: str) -> GENDER:
+    #     """
+    #     Predict gender, without using cache
+    #     """
+    #     if not profession.strip():
+    #         # Empty string
+    #         return GENDER.unknown
 
-    def _get_gender(self, profession: str) -> GENDER:
-        """
-        Predict gender, without using cache
-        """
-        if not profession.strip():
-            # Empty string
-            return GENDER.unknown
+    #     toks = self.nlp(profession)
+    #     observed_genders = [gender for gender in map(get_gender_from_token, toks)
+    #                         if gender is not None]
 
-        toks = self.nlp(profession)
-        observed_genders = [gender for gender in map(get_gender_from_token, toks)
-                            if gender is not None]
+    #     if not observed_genders:
+    #         # No observed gendered words - return unknown
+    #         return GENDER.unknown
 
-        if not observed_genders:
-            # No observed gendered words - return unknown
-            return GENDER.unknown
-
-        # Return the most commonly observed gender
-        return Counter(observed_genders).most_common()[0][0]
+    #     # Return the most commonly observed gender
+    #     return Counter(observed_genders).most_common()[0][0]
 
 if __name__ == "__main__":
-    # Parse command line arguments
-    args = docopt(__doc__)
-    inp_fn = args["--in"]
-    out_fn = args["--out"]
-    debug = args["--debug"]
-    if debug:
-        logging.basicConfig(level = logging.DEBUG)
-    else:
-        logging.basicConfig(level = logging.INFO)
+    ds= ['female', 1, 'The developer argued with the designer because she did not like the design.', 'developer']
+    tr_sent = 'Der Entwickler stritt mit dem Designer, weil sie Design mochte. nicht das'
 
-    logging.info("DONE")
+    p = GermanPredictor()
+    pred_gender_ge = p.get_gender(profession='developer', translated_sent=tr_sent, entity_index=1, ds_entry=ds)
+    print(pred_gender_ge)
+    print("DONE")

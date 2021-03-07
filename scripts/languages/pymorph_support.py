@@ -1,22 +1,26 @@
-""" Usage:
-    <file-name> --in=IN_FILE --out=OUT_FILE [--debug]
+
+""" 
+In this code, we aim to identify the gender according to the word's morphology analysis
+in Russian and Ukrainian
 """
+
 # External imports
-import logging
 import pdb
-from pprint import pprint
-from pprint import pformat
-from docopt import docopt
-from collections import defaultdict
-from operator import itemgetter
-from tqdm import tqdm
+#from pprint import pprint
+#from pprint import pformat
+#from docopt import docopt
+#from collections import defaultdict
+#from operator import itemgetter
+#from tqdm import tqdm
 from collections import Counter
 import pymorphy2
+from pymorphy2.lang import uk
+
 from pymorphy2.tokenizers import simple_word_tokenize
 from pymorphy2 import dawg
 
 # Local imports
-from languages.util import GENDER, PYMORPH_GENDER_TYPES
+from util import GENDER, PYMORPH_GENDER_TYPES
 #=-----
 
 class PymorphPredictor:
@@ -39,7 +43,7 @@ class PymorphPredictor:
         Predict gender of an input profession.
         """
         if profession not in self.cache:
-            self.cache[profession] = self._get_gender(profession)
+            self.cache[profession] = self._get_gender(profession) # predict profession's gender
 
         return self.cache[profession]
 
@@ -53,7 +57,7 @@ class PymorphPredictor:
 
         toks = simple_word_tokenize(profession)
 
-        observed_genders = [self.get_word_gender(tok) for tok in toks]
+        observed_genders = [self.get_word_gender(tok) for tok in toks] #predict the probable gender 
 
         if not observed_genders:
             # No observed gendered words - return unknown
@@ -68,7 +72,7 @@ class PymorphPredictor:
         predictions.
         """
         morphs = self.tagger.parse(word)
-        observed_genders = [PYMORPH_GENDER_TYPES[morph.tag.gender] for morph in morphs
+        observed_genders = [PYMORPH_GENDER_TYPES[morph.tag.gender] for morph in morphs # get the gender from tagger
                             if (morph.tag.gender is not None)]
 
         if not observed_genders:
@@ -76,18 +80,22 @@ class PymorphPredictor:
 
         if GENDER.female in observed_genders:
             return GENDER.female
-
+        # Return the most commonly observed gender
         return Counter(observed_genders).most_common()[0][0]
 
 if __name__ == "__main__":
-    # Parse command line arguments
-    args = docopt(__doc__)
-    inp_fn = args["--in"]
-    out_fn = args["--out"]
-    debug = args["--debug"]
-    if debug:
-        logging.basicConfig(level = logging.DEBUG)
-    else:
-        logging.basicConfig(level = logging.INFO)
 
-    logging.info("DONE")
+
+    ds = ['female', 1, 'The developer argued with the designer because she did not like the design.', 'developer']
+    tr_sent_uk = 'Розробник сперечалися з designer, бо вона не як оформлення'
+    p = PymorphPredictor(lang="uk")
+    pred_uk = p.get_gender('Розробник',tr_sent_uk, 0,ds)
+    print(pred_uk)
+    print("DONE")
+
+    ds = ['female', 1, 'The developer argued with the designer because she did not like the design.', 'developer']
+    tr_sent_ru = 'Разработчик спорил с дизайнером, потому что ей не понравился дизайн'
+    p = PymorphPredictor(lang="ru")
+    pred_ru = p.get_gender('Разработчик',tr_sent_ru, 0,ds)
+    print(pred_ru)
+    print("DONE")
