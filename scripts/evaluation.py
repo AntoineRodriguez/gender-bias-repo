@@ -64,8 +64,6 @@ def evaluate_bias(ds: List[str], predicted: List[GENDER]) -> Dict:
     all_total = sum(total.values())
 
     output_dict = {}  # init output dictionnary
-
-    print(sum(correct_cnt.values()))
     # Compute metrics
     accuracy = round((sum(correct_cnt.values()) / all_total) * 100, 1)  # compute accuracy
     output_dict['acc'] = accuracy

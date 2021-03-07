@@ -2,11 +2,7 @@
 
 """
 # External imports
-import logging
-import pdb
 from pprint import pprint
-from pprint import pformat
-from docopt import docopt
 from collections import defaultdict, Counter
 from operator import itemgetter
 from typing import List
@@ -20,7 +16,6 @@ from languages.semitic import HebrewPredictor, ArabicPredictor
 from languages.util import GENDER, SPACY_GENDER_TYPES
 from evaluation import evaluate_bias
 
-
 LANGUAGE_PREDICTOR = {
     "es": lambda: SpacyPredictor("es"),
     "fr": lambda: SpacyPredictor("fr"),
@@ -30,7 +25,6 @@ LANGUAGE_PREDICTOR = {
     "he": lambda: HebrewPredictor(),
     "ar": lambda: ArabicPredictor(),
     "de": lambda: GermanPredictor()
-    # "de": lambda: GenderedArticlePredictor("de", get_german_determiners, GERMAN_EXCEPTION)
 }
 
 
@@ -52,7 +46,7 @@ def get_src_indices(instance: List[str]) -> List[int]:
     return src_indices
 
 
-def get_translated_professions(alignment_fn: str, ds: List[List[str]], bitext: List[List[str]]) -> List[str]:
+def get_translated_professions(alignment_fn, ds: List[List[str]], bitext: List[List[str]]) -> List[str]:  # noqa
     """
     (Language independent)
     Load alignments from file and return the translated profession according to
@@ -74,13 +68,24 @@ def get_translated_professions(alignment_fn: str, ds: List[List[str]], bitext: L
 
     src_indices = list(map(get_src_indices, ds))
 
-    full_alignments = []
-    for line in open(alignment_fn):
-        cur_align = defaultdict(list)
-        for word in line.split():
-            src, tgt = word.split("-")
-            cur_align[int(src)].append(int(tgt))
-        full_alignments.append(cur_align)
+    if isinstance(alignment_fn, str):
+        full_alignments = []
+        for line in open(alignment_fn):
+            cur_align = defaultdict(list)
+            for word in line.split():
+                src, tgt = word.split("-")
+                cur_align[int(src)].append(int(tgt))
+            full_alignments.append(cur_align)
+    elif isinstance(alignment_fn, list):
+        full_alignments = []
+        for line in alignment_fn:
+            cur_align = defaultdict(list)
+            for word in line.split():
+                src, tgt = word.split("-")
+                cur_align[int(src)].append(int(tgt))
+            full_alignments.append(cur_align)
+    else:
+        raise TypeError('Unknown type for alignment_fn, you may use a string (path) or list')
 
     bitext_inds = [ind for ind, _ in bitext]
 
@@ -124,7 +129,6 @@ def align_bitext_to_ds(bitext, ds):
 
 
 if __name__ == "__main__":
-
     lang = 'it'
     gender_predictor = LANGUAGE_PREDICTOR[lang]()
 
@@ -138,7 +142,7 @@ if __name__ == "__main__":
     bitext = align_bitext_to_ds(full_bitext, ds)
 
     translated_profs, tgt_inds = get_translated_professions(al_fn, ds, bitext)
-    assert(len(translated_profs) == len(tgt_inds))
+    assert (len(translated_profs) == len(tgt_inds))
 
     target_sentences = [tgt_sent for (ind, (src_sent, tgt_sent)) in bitext]
 
@@ -146,7 +150,7 @@ if __name__ == "__main__":
                           for prof, translated_sent, entity_index, ds_entry
                           in zip(translated_profs,
                                  target_sentences,
-                                 map(lambda ls:min(ls, default=-1), tgt_inds),
+                                 map(lambda ls: min(ls, default=-1), tgt_inds),
                                  ds)]
 
     d = evaluate_bias(ds, gender_predictions)
