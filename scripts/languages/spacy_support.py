@@ -1,21 +1,15 @@
-""" Usage:
-    <file-name> --in=IN_FILE --out=OUT_FILE [--debug]
 """
-# External imports
-import logging
-import pdb
-from pprint import pprint
-from pprint import pformat
-from docopt import docopt
-from collections import defaultdict
-from operator import itemgetter
-from tqdm import tqdm
+create class SpacyPredictor for spanish, French, and Italian languages with two functions:
+    _get_gender() to predict gender whithout using cache, and
+     get_gender() to predict gender of an input profession
+     which is retrieved according to the function: _get_gender().
+"""
 from collections import Counter
+
 import spacy
 
-# Local imports
-from languages.util import GENDER, get_gender_from_token
-#=-----
+from util import GENDER, SPACY_GENDER_TYPES, get_gender_from_token
+
 
 class SpacyPredictor:
     """
@@ -28,18 +22,23 @@ class SpacyPredictor:
         Init spacy for the specified language code.
         """
         assert lang in ["es", "fr", "it"]
+        spacy_dict = {
+            'fr': "fr_core_news_sm",
+            'it': "it_core_news_sm",
+            'es': "es_core_news_sm"
+        }
         self.lang = lang
         self.cache = {}    # Store calculated professions genders
-        self.nlp = spacy.load(self.lang, disable = ["parser", "ner"])
+        self.nlp = spacy.load(spacy_dict[self.lang])
 
-    def get_gender(self, profession: str, translated_sent = None, entity_index = None, ds_entry = None) -> GENDER:
+    def get_gender(self, profession: str, translated_sent=None, entity_index=None, ds_entry=None) -> GENDER:
         """
         Predict gender of an input profession.
         """
         if translated_sent == "Il venditore ha parlato con l'insegnante e l'ha invitata a cena.":
             pass
         if profession not in self.cache:
-            self.cache[profession] = self._get_gender(profession)
+            self.cache[profession] = self._get_gender(profession) # Store calculated professions genders in cache using _get_gender() function # noqa
 
         return self.cache[profession]
 
@@ -52,25 +51,38 @@ class SpacyPredictor:
             return GENDER.unknown
 
         toks = self.nlp(profession)
-        observed_genders = [gender for gender in map(get_gender_from_token, toks)
+        gender_from_tok = [get_gender_from_token(token) for token in toks]
+        observed_genders = [gender for gender in gender_from_tok
                             if gender is not None]
-
         if not observed_genders:
             # No observed gendered words - return unknown
-            return GENDER.unknown
+            return 'Unk'
+
+        if GENDER.female in observed_genders:
+            return 'Fem'
 
         # Return the most commonly observed gender
         return Counter(observed_genders).most_common()[0][0]
 
-if __name__ == "__main__":
-    # Parse command line arguments
-    args = docopt(__doc__)
-    inp_fn = args["--in"]
-    out_fn = args["--out"]
-    debug = args["--debug"]
-    if debug:
-        logging.basicConfig(level = logging.DEBUG)
-    else:
-        logging.basicConfig(level = logging.INFO)
 
-    logging.info("DONE")
+if __name__ == "__main__":
+    ds = ['female', 1, 'The developer argued with the designer because she did not like the design.', 'developer']
+    tr_sent_fr = "Le développeur a discuté avec le concepteur parce qu'elle n'aimait pas le design."
+    p = SpacyPredictor(lang="fr")
+    pred_fr = p.get_gender('développeur', tr_sent_fr)
+    print(pred_fr)
+    print("FRENCH TEST DONE")
+
+    ds = ['female', 1, 'The developer argued with the designer because she did not like the design.', 'developer']
+    tr_sent_ru = 'Lo sviluppatore ha discusso con il designer perché non le piaceva il design.'
+    p = SpacyPredictor(lang="it")
+    pred_it = p.get_gender('sviluppatore', tr_sent_ru)
+    print(pred_it)
+    print("ITALIAN TEST DONE")
+
+    ds = ['female', 1, 'The developer argued with the designer because she did not like the design.', 'developer']
+    tr_sent_es = 'El desarrollador discutió con el diseñador porque no le gustaba el diseño.'
+    p = SpacyPredictor(lang="es")
+    pred_es = p.get_gender('desarrollador', tr_sent_ru, 0, ds)
+    print(pred_es)
+    print("SPANISH TEST DONE")

@@ -1,23 +1,12 @@
-""" Usage:
-    <file-name> --in=IN_FILE --out=OUT_FILE [--debug]
 """
-# External imports
-#import logging
-import spacy
-import pdb
-#from pprint import pprint
-#from pprint import pformat
-from docopt import docopt
-from collections import defaultdict
-from operator import itemgetter
-from tqdm import tqdm
+create class GENDER to enumerate genders and dictionaries for gender type conversion
+"""
+import re
+
 from enum import Enum
 from spacy.tokens.token import Token
 from typing import Dict
 
-# Local imports
-
-#=-----
 
 class GENDER(Enum):
     """
@@ -28,16 +17,19 @@ class GENDER(Enum):
     female = 1
     neutral = 2
     unknown = 3
-    ignore = 4 
+    ignore = 4
 
-
+"""
+Dictionaries for gender type conversion according to the language
+"""
 SPACY_GENDER_TYPES = {
     "Masc": GENDER.male,
     "Fem": GENDER.female,
-    "Neut": GENDER.neutral # seen in Dutch spacy
+    "Neut": GENDER.neutral,  # seen in Dutch spacy
+    "Unk": GENDER.unknown
 }
 
-# Winobias gender type conversion
+#  Winobias gender type conversion
 WB_GENDER_TYPES = {
     "male": GENDER.male,
     "female": GENDER.female,
@@ -51,36 +43,23 @@ PYMORPH_GENDER_TYPES = {
     None: GENDER.neutral
 }
 
-MORFEUSZ_GENDER_TYPES = {
-    "m1": GENDER.male,
-    "m2": GENDER.male,
-    "m3": GENDER.male,
-    "m1.m2": GENDER.male,
-    "m1.m2.m3": GENDER.male,
-    "f": GENDER.female,
-    "m1.m2.m3.n": GENDER.neutral,
-    "n": GENDER.neutral,
-    None: GENDER.neutral
-}
 
-MORFEUSZ_GENDER_TAG_POSITION = 2
-
-
+# these two functions are used by spacy_support and german
 def get_morphology_dict(token: Token) -> Dict:
     """
     Parse a morphology dictionary from spacy token.
-    @TODO: No better way to do this?
     """
-    if "__" not in token.tag_:
-        raise AssertionError("No morphology support?")
+    if not token.morph:
+        return {'Gender': 'Unk'}
 
-    morphology = token.tag_.split("__")[1]
+    morphology = str(token.morph)  # extract a token like this : Gender=Masc|Number=Sing
 
-    if morphology == "_":
-        return {}
-
+    #print(morphology)
+    #print([prop.split("=") for prop in morphology.split("|")])
     morphology_dict = dict([prop.split("=") for prop in morphology.split("|")])
+    #print('dict {}'.format(morphology_dict))
     return morphology_dict
+
 
 def get_gender_from_token(token: Token):
     """
@@ -94,7 +73,6 @@ def get_gender_from_token(token: Token):
     if (token.lang_ == "it") and (token.text.startswith("dell'")):
         return GENDER.male
 
-
     morph_dict = get_morphology_dict(token)
     if "Gender" not in morph_dict:
         return None
@@ -102,19 +80,6 @@ def get_gender_from_token(token: Token):
     morph_gender = SPACY_GENDER_TYPES[morph_dict["Gender"]]
     return morph_gender
 
+
 if __name__ == "__main__":
-    # Parse command line arguments
-    args = docopt(__doc__)
-    inp_fn = args["--in"]
-    out_fn = args["--out"]
-    debug = args["--debug"]
-    if debug:
-        logging.basicConfig(level = logging.DEBUG)
-    else:
-        logging.basicConfig(level = logging.INFO)
-
-    nlp = spacy.load("es")
-    doc = nlp('Las naranjas y las manzanas se parecen')
-    logging.info(list(map(get_morphology_dict, doc)))
-
-    logging.info("DONE")
+    pass
