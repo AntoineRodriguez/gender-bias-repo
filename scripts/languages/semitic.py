@@ -1,22 +1,12 @@
-
-# External imports
-import pdb
-#from pprint import pprint
-#from pprint import pformat
-#from docopt import docopt
-#from collections import defaultdict
-#from operator import itemgetter
-#from tqdm import tqdm
-#from collections import Counter
+"""
+In this code, we aim to identify the gender according to the hebrew and arabic determiners
+"""
 from spacy.lang.he import Hebrew
 
 # Local imports
 from util import GENDER
-#=-----
 
-""" 
-In this code, we aim to identify the gender according to the hebrew determiners
-"""
+
 class HebrewPredictor:
     """
     Hebrew morphology heurstics.
@@ -34,7 +24,7 @@ class HebrewPredictor:
         Predict gender of an input profession.
         """
         if profession not in self.cache:
-            self.cache[profession] = self._get_gender(profession) # predict gender 
+            self.cache[profession] = self._get_gender(profession)  # predict gender
 
         return self.cache[profession]
 
@@ -47,17 +37,15 @@ class HebrewPredictor:
             # Empty string is an error in alignment
             return GENDER.unknown
 
-        toks = [w.text for w in self.tokenizer(profession) # get all profession's tokens which are diffrent of "את"
+        toks = [w.text for w in self.tokenizer(profession)  # get all profession's tokens which are diffrent of "את"
                 if w.text != "את"]
 
-        if any([tok[-1] in ["ת", "ה"] for tok in toks]): # check female determiners 
+        if any([tok[-1] in ["ת", "ה"] for tok in toks]):  # check female determiners
             return GENDER.female
 
         return GENDER.male
 
-""" 
-In this code, we aim to identify the gender according to the arabic determiners
-"""
+
 class ArabicPredictor:
     """
     Arabic morphology heurstics.
@@ -68,14 +56,14 @@ class ArabicPredictor:
         """
         self.lang = "ar"
         self.cache = {}    # Store calculated professions genders
-        self.tokenizer = lambda sent: sent.split() # Might be better with a dedicated Arabic tokenizer
+        self.tokenizer = lambda sent: sent.split()  # TODO: Might be better with a dedicated Arabic tokenizer
 
     def get_gender(self, profession: str) -> GENDER:
         """
         Predict gender of an input profession.
         """
         if profession not in self.cache:
-            self.cache[profession] = self._get_gender(profession) # predict gender 
+            self.cache[profession] = self._get_gender(profession)  # predict gender
 
         return self.cache[profession]
 
@@ -90,7 +78,7 @@ class ArabicPredictor:
 
         toks = self.tokenizer(profession)
 
-        if any([("ة" in tok) or ("ﺔ" in tok) for tok in toks]): # check the female determiners from profession's tokens
+        if any([("ة" in tok) or ("ﺔ" in tok) for tok in toks]):  # check the female determiners from profession's tokens
             return GENDER.female
 
         return GENDER.male
@@ -102,10 +90,11 @@ if __name__ == "__main__":
     p = ArabicPredictor()
     pred = p.get_gender('المطور')
     print(pred)
-    print("DONE")
+    print("ARABIC TEST DONE")
+
     ds = ['female', 1, 'The developer argued with the designer because she did not like the design.', 'developer']
     tr_sent = 'היזם התווכח עם המעצב כי היא לא אוהבת את העיצוב'
     p = HebrewPredictor()
     pred_he = p.get_gender('העיצוב')
     print(pred_he)
-    print("DONE")
+    print("HEBREW TESTDONE")
