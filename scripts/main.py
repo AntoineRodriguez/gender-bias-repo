@@ -37,9 +37,10 @@ def procede_evaluation(ds, bi, align, lang):
 	d = evaluate_bias(ds, gender_predictions)
 	return d
 
+
 MT_LIST = ['bing', 'google', 'systran', 'aws']  # no ukranian translation with amazon
 LANGUAGE_LIST_ukless = ['fr', 'es', 'it', 'ar', 'he', 'ru']
-LANGUAGE_LIST_all = ['fr', 'es', 'it', 'ar', 'he', 'ru', 'uk']
+LANGUAGE_LIST_all = ['fr', 'es', 'de', 'it', 'ar', 'he', 'ru', 'uk']
 
 with open('../translations/_aligns/pro-anti_indexes.pkl', 'rb') as file:
 	pro_ind, anti_ind = pickle.load(file)
@@ -81,20 +82,30 @@ def main_function(tab, ds_fn):
 		df.to_csv('../results/eval_{}_{}.csv'.format(tab, MT))
 
 
-for lang in LANGUAGE_LIST_all:
-
-
+def compute_final_dataframe():
+	for MT in MT_LIST:
+		df = pd.DataFrame(columns=['acc', 'DeltaG', 'DeltaS'])
+		suball = pd.read_csv("../results/eval_all_{}.csv".format(MT), index_col=0)
+		subpro = pd.read_csv("../results/eval_pro_{}.csv".format(MT), index_col=0)
+		subanti = pd.read_csv("../results/eval_anti_{}.csv".format(MT), index_col=0)
+		df['acc'] = suball['acc']
+		df['DeltaG'] = abs(suball['f1_male'] - suball['f1_female'])
+		df['DeltaS'] = abs(subpro[['f1_male', 'f1_female']].max(axis=1) - subanti[['f1_male', 'f1_female']].max(axis=1))
+		df.to_csv('../results/final_{}.csv'.format(MT))
 
 
 if __name__ == "__main__":
 	ds_fn = '../data/en.txt'
-
+	"""
 	print('generate results for all dataset')
 	main_function('all', ds_fn)
 	print('generate results for anti-stereotypical dataset')
 	main_function('anti', ds_fn)
 	print('generate results for pro-stereotypical dataset')
-	main_function('pro', ds_fn)
+	main_function('pro', ds_fn)"""
+	print("Generate final dataframe...")
+	compute_final_dataframe()
+	print('Done !')
 
 
 

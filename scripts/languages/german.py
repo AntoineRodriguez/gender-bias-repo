@@ -49,8 +49,8 @@ class GermanPredictor:
         if any([word.endswith("in") for word in profession_words]):  # identify "in" determiner which is for female
             return GENDER.female
         dets = self.get_determiners(words)  # get the determiners found in words
-        if len(dets) < 2:
-            print("less than two dets found:", translated_sent)
+        #if len(dets) < 2:
+            #print("less than two dets found:", translated_sent)
         if len(dets) == 0:
             return GENDER.male
         closest_det = min(dets, key=lambda elem: abs(elem[0] - entity_index))  # get the index of the determiner
