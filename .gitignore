@@ -2,6 +2,13 @@
 venv/
 test-docker/
 .dockerignore
+
+# Antoine gitignore
 scripts/__pycache__
 nlp.py
 test-systran-align/
+scripts/languages/__pycache__
+
+# Lilia gitignore
+
+# Douaa gitignore
