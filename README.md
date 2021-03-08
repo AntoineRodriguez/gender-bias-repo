@@ -8,6 +8,27 @@ Antoine Rodriguez - Lilia Harireche - Douaa Benhaddouche
 
 -----------
 
+**Install requirements**
 ```
 bash install.sh
+```
+
+**Reproduce results**
+```
+python ./scripts/main.py
+```
+
+Translations were made by original authors and put in ./languages.
+An attempt is in `translate.py` and `translate_ API.py`  but it need to configure APIs.
+
+-----------
+**Create a Docker container of the repo** 
+
+In gender-bias-repo root :
+```
+docker build -t gender-bias-docker .
+```
+then
+```
+docker run -t gender-bias-docker
 ```

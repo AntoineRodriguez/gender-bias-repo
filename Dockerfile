@@ -1,43 +1,17 @@
-#######################
-# Choose an OS or runtime environment image that fits the needs of your experiment e.g.
-#FROM debian:jessie
-#Or:
 FROM python:3.8-slim
-#######################
-WORKDIR /docker
+
+COPY requirements.txt .
+RUN pip install -r ./requirements.txt
+RUN python -m spacy download "de_core_news_sm"
+RUN python -m spacy download "fr_core_news_sm"
+RUN python -m spacy download "it_core_news_sm"
+RUN python -m spacy download "es_core_news_sm"
+
+RUN mkdir src
+RUN mkdir src/results
+WORKDIR /src
+COPY . .
+
+CMD [ "python", "./scripts/main.py" ]
 
 
-# https://docs.docker.com/language/python/build-images/
-# https://docs.docker.com/engine/reference/commandline/save/
-
-COPY . /docker
-
-RUN bash install.sh
-#Define input/output directories
-VOLUME /input
-VOLUME /output
-
-CMD [ "python", "test-docker/main.py" ]
-
-#/datasets"
-#VOLUME "/output/tables_and_plots"
-
-# pour docker-test
-#ADD
-#RUN
-#ENTRYPOINT ./run-test.sh
-
-#Add and set entrypoint 
-#ADD run.sh /run.sh
-#RUN chmod u+x /run.sh
-#ENTRYPOINT /run.sh
-
-#######################
-# Customization start #
-#######################
-
-#Add any custom dependencies and/or scripts here
-
-#######################
-# Customization end   #
-#######################

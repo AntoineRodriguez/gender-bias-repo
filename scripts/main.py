@@ -1,12 +1,17 @@
 """
-
+Main file : Gender Bias Evaluation
 """
 import pandas as pd
+import os
+
 import pickle
 
 from evaluation import evaluate_bias
 
 from load_alignments import LANGUAGE_PREDICTOR, get_translated_professions, align_bitext_to_ds
+
+
+os.chdir('scripts/')
 
 
 def listify_file(ds=None, bi=None, align=None):
@@ -96,13 +101,13 @@ def compute_final_dataframe():
 
 if __name__ == "__main__":
 	ds_fn = '../data/en.txt'
-	"""
+	
 	print('generate results for all dataset')
 	main_function('all', ds_fn)
 	print('generate results for anti-stereotypical dataset')
 	main_function('anti', ds_fn)
 	print('generate results for pro-stereotypical dataset')
-	main_function('pro', ds_fn)"""
+	main_function('pro', ds_fn)
 	print("Generate final dataframe...")
 	compute_final_dataframe()
 	print('Done !')
