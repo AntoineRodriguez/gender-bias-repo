@@ -4,7 +4,8 @@ Reproduction of *Evaluating Gender Bias in Machine Translation Gabriel Stanovsky
 (original repository [mt_gender](https://github.com/gabrielStanovsky/mt_gender))
 
 University Project for Master's degree in **M**achine **L**earning for **D**ata **S**cience (Université de Paris)
-Antoine Rodriguez - Lilia Harireche - Douaa Benhaddouche
+
+Antoine Rodriguez - [Lilia Harireche](https://github.com/LiliaHarireche) - [Douaa Benhaddouche](https://github.com/Duaam)
 
 -----------
 
